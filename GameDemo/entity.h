@@ -8,8 +8,8 @@ public:
 		sf::Color color = sf::Color::Green, float maxVelX = 1.0f);
 	void move();
 	virtual void accelerate(int x,int y); // skicka in ändringen plus eventuellt level
+	virtual bool collision(entity ent);
 	// void destroy(); // ska ta bort objektet på något smidigt sätt. typ kalla destruktorn på det.
-	void update(); 
 	int getPositionX() const;
 	int getPositionY() const;
 	sf::RectangleShape getRect() const;
@@ -19,13 +19,17 @@ protected:
 	sf::RectangleShape _boxObj;
 
 	/* Corners for collission detection */
-	float _bot, _left, _right, _top;
+	/*float _bot, _left, _right, _top;*/
+
 	/* Velocity for movements */
 	float _velocityX , _velocityY, _maxVelX;
 };
 
 class player : public entity {
 public:
+
 	bool collision(entity ent);
 private:
+	void subtractLife();
+	int life;
 };

@@ -5,12 +5,6 @@ entity::entity(sf::Vector2f position, sf::Vector2f size,sf::Color color, float m
 	_boxObj.setPosition(position);
 	_boxObj.setSize(size);
 	_boxObj.setFillColor(color);
-
-	_bot = position.y + size.y; // Bottom left corner
-	_left = position.x; // top left corner
-	_right = position.x + size.x; // right top corner
-	_top = position.y; // top left corner
-
 	_maxVelX = maxVelX;
 }
 
@@ -35,22 +29,20 @@ void entity::accelerate(int x, int y) {
 	_velocityY = y;
 }
 
-void entity::update() {
-
-	_bot = _boxObj.getPosition().y + _boxObj.getSize().y;
-	_left = _boxObj.getPosition().x;
-	_right = _boxObj.getPosition().x + _boxObj.getSize().x;
-	_top = _boxObj.getPosition().y;
-
-
-}
-
 int entity::getPositionX() const{
 	return _boxObj.getPosition().x;
 }
 
 int entity::getPositionY() const{
 	return _boxObj.getPosition().y;
+}
+
+void entity::setSize(sf::Vector2f size) {
+	_boxObj.setSize(size);
+}
+
+void entity::setColor(sf::Color color) {
+	_boxObj.setFillColor(color);
 }
 
 /* https://www.youtube.com/watch?v=n0U-NBmLj78i */
