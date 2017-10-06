@@ -20,5 +20,5 @@ private:
 	typedef std::vector<entity*> EntityVector;
 	std::vector<Alien*> _swarm;
 	player _mC;
-	int level, score;
+	int _level, _score;
 };

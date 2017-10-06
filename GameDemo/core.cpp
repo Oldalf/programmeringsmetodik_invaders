@@ -6,7 +6,7 @@
 Core::Core(int width, int height) :
 	_window(sf::VideoMode(width, height), "Game demo"),
 	_mC(), _swarm(), _lose(false), _win(false),
-	_width(width), _height(height),score(),level() {
+	_width(width), _height(height),_score(0),_level(1) {
 
 	_swarm.push_back(new Alien());
 	_swarm.push_back(new Alien(sf::Vector2f(50,20),sf::Vector2f(10,10)));
@@ -36,13 +36,40 @@ void Core::update() {
 		}
 	}
 
+	/* MC logic */
 	controller();
 	_mC.move();
+		/* Keeping mc within the bounds of the play area. */
 	if (_mC.getPosition().x > _width) {
 		_mC.setPosition(sf::Vector2f(0, _mC.getPosition().y));
 	}
 	if (_mC.getPosition().x < 0) {
 		_mC.setPosition(sf::Vector2f(_width, _mC.getPosition().y));
+	}
+
+	if (_mC.getPosition().y < 0) {
+		_mC.setPosition(sf::Vector2f(_mC.getPosition().x, 0));
+	}
+
+	if (_mC.getPosition().y > (_height - _mC.getRect()->getSize().y)) {
+		std::cout << "hit" << std::endl;
+		_mC.setPosition(sf::Vector2f(_mC.getPosition().x, _height - _mC.getRect()->getSize().y));
+	}
+
+	/* Alien logic */
+	for (int i = 0; i < _swarm.size(); i++) {
+		_swarm[i]->move();
+
+		/* Keep the aliens inside the playarea */
+		if (_swarm[i]->getPosition().x > _width) {
+			_swarm[i]->accelerate(sf::Vector2f(-2, _swarm[i]->getVelocity().y), _level);
+		}
+		if (_swarm[i]->getPosition().x < 0) {
+			_swarm[i]->accelerate(sf::Vector2f(2, _swarm[i]->getVelocity().y),_level);
+		}
+		if (_swarm[i]->getPosition().y > _height) {
+			//lose a life and alien goes inactive/dissapears.
+		}
 	}
 }
 
