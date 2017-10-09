@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include "entity.h"
 #include "player.h"
 #include "Alien.h"
 
@@ -17,8 +18,12 @@ private:
 	bool gameRunning = true;
 	sf::RenderWindow _window;
 	bool _win, _lose;
-	typedef std::vector<entity*> EntityVector;
+	std::vector<Bomb*> _bombs;
+	std::vector<Bomb*> _deadBombs;
+	std::vector<Lazer*> _lazers;
+	std::vector<Lazer*> _deadLazers;
 	std::vector<Alien*> _swarm;
+	std::vector<Alien*> _deadSwarm;
 	player _mC;
-	int _level, _score;
+	int _level, _score,_frames;
 };

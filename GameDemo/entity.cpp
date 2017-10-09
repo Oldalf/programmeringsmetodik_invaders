@@ -23,9 +23,6 @@ void entity::move() {
 
 	_boxObj.setPosition(_boxObj.getPosition().x + _velocity.x, _boxObj.getPosition().y + _velocity.y);
 
-	_velocity.x = 0;
-	_velocity.y = 0;
-
 	/* std::cout << "Velocity efter udpdate: " << std::endl;
 	std::cout << _velocity.x << "," << _velocity.y << std::endl; */
 }
@@ -33,9 +30,9 @@ void entity::move() {
 void entity::accelerate(sf::Vector2f newVel) {
 
 	if (newVel.x <= _maxVelX || newVel.x >= -_maxVelX) {
-	_velocity.x =+ newVel.x;
+	_velocity.x = newVel.x;
 	}
-	_velocity.y =+ newVel.y;
+	_velocity.y = newVel.y;
 }
 
 /* https://www.youtube.com/watch?v=n0U-NBmLj78i */
@@ -85,8 +82,46 @@ void entity::setPosition(sf::Vector2f position) {
 *************************************************
 */
 
+Lazer::Lazer(sf::Vector2f position, sf::Vector2f size,sf::Color color, float maxVelX):
+	entity(position, size, color, maxVelX) {
+	_type = 2; 
+	
+}
+
+int Lazer::collide(entity *ent) {
+	bool hit = collision(ent);
+	if (hit == true && ent->getType() == 1) {
+		return 1; // it's a hit and the updater will have to cover it
+	}
+	return 0;
+}
+
 /*
 *************************************************
 ********************  Bombs  ********************
 *************************************************
 */
+
+Bomb::Bomb(sf::Vector2f position, sf::Vector2f size, sf::Color color, float maxVelX):
+	entity(position, size, color, maxVelX) {
+	_type = 3;
+}
+
+int Bomb::collide(entity *ent) {
+	bool hit = collision(ent);
+	if (hit == true && ent->getType() == 0) {
+		return 1; // it's a hit and the updater will have to cover it
+	}
+	return 0;
+}
+
+void Bomb::accelerate(sf::Vector2f newVel) {
+	accelerate(newVel, 1);
+}
+
+void Bomb::accelerate(sf::Vector2f newVel, int level) {
+	if (newVel.x <= _maxVelX || newVel.x >= -_maxVelX) {
+		_velocity.x = newVel.x + (level / 2);
+	}
+	_velocity.y = newVel.y;
+}
