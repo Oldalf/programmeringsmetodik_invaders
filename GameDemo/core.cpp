@@ -13,7 +13,10 @@ Core::Core(int width, int height) :
 	
 	/*
 	TODO/NOTES
-	Alla ställen där [i]->getRect()->getSize().x/y kallas går att ändra till en temp vector2f
+	viktigt: Explosioner, textures. ev ljud.
+	Kollision, liv, score.
+	
+	optimisering: Alla ställen där [i]->getRect()->getSize().x/y kallas går att ändra till en temp vector2f
 	för att minska antalet funktions calls. minnet bör gå upp lite men borde bli mindre processing eftersom
 	man bara kallar getRect()->getSize() en gång.
 	*/
@@ -61,11 +64,9 @@ void Core::update() {
 	// gör så rutan går att stänga men ska det vara en while loop verkligen? och om window closar så måste
 	// vi stänga av loopen etc och stänga av programmet till main.
 	sf::Event evnt;
-	while (_window.pollEvent(evnt)) {
-
-		if (evnt.type == sf::Event::Closed) {
+	_window.pollEvent(evnt);
+	if (evnt.type == sf::Event::Closed) {
 			_window.close();
-		}
 	}
 
 /* MC logic */
@@ -175,50 +176,106 @@ void Core::update() {
 		}
 
 		if (_bombs[i]->getPosition().y + _bombs[i]->getRect()->getSize().y > _height) {
-			std::cout << " direkt " << std::endl;
 			_bombs[i]->accelerate(sf::Vector2f(0, 0), _level);
-			std::cout << "flyttar bomb " << std::endl;
 			_deadBombs.push_back(_bombs[i]);
-			std::cout << " tar bort gammal bomb" << std::endl;
 			_bombs.erase(_bombs.begin() + i);
-			std::cout << " klar" << std::endl;
 		}
 	}
 
 /* Lazer logic */
+	for (int i = 0; i < _lazers.size(); i++) {
+		_lazers[i]->move();
+		/* Lazer movement logic */
+		if (_lazers[i]->getPosition().x + _lazers[i]->getRect()->getSize().x > _width) {
+			_lazers[i]->setPosition(sf::Vector2f(
+				_width - _lazers[i]->getRect()->getSize().x, _lazers[i]->getRect()->getSize().y
+			));
+		}
+
+		if (_lazers[i]->getPosition().x < 0) {
+			_lazers[i]->setPosition(sf::Vector2f(
+				0, _lazers[i]->getRect()->getSize().y
+			));
+		}
+
+		if (_lazers[i]->getPosition().y < 0) {
+			_lazers[i]->accelerate(sf::Vector2f(0, 0));
+			_deadLazers.push_back(_lazers[i]);
+			_lazers.erase(_lazers.begin() + i);
+		}
+	}
 
 /* Collision logic */
 }
 
 void Core::controller() {
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-	//	std::cout << "left klicked" << std::endl;
 		_mC.accelerate(sf::Vector2f(-2, _mC.getVelocity().y));
 	}
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-		//std::cout << "righ klicked" << std::endl;
 		_mC.accelerate(sf::Vector2f(2, _mC.getVelocity().y));
 	}
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
-	//	std::cout << "down klicked" << std::endl;
 		_mC.accelerate(sf::Vector2f(_mC.getVelocity().x, 2));
 	}
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
-	//	std::cout << "up klicked" << std::endl;
 		_mC.accelerate(sf::Vector2f(_mC.getVelocity().x, -2));
 	}
-
+	/* Todo skjut 3 skott. */
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-		std::cout << " space clicked:  ";
 		if (_mC.LastFire().asMilliseconds() >= 1000) {
-			//TODO fire event stuff.
-			std::cout << "fire!!!" << std::endl;
+			if (_deadLazers.size() >= 3) {
+				_lazers.push_back(_deadLazers[0]);
+				_deadLazers.erase(_deadLazers.begin());
+
+				sf::Vector2f tempPos = _mC.getPosition();
+				sf::Vector2f tempSize = _mC.getRect()->getSize();
+
+				_lazers[_lazers.size() - 1]->setPosition(sf::Vector2f(
+					tempPos.x + tempSize.x / 2,
+					tempPos.y - 5));
+				_lazers[_lazers.size() - 1]->accelerate(sf::Vector2f(0, -3));
+
+				_lazers.push_back(_deadLazers[0]);
+				_deadLazers.erase(_deadLazers.begin());
+
+				_lazers[_lazers.size() - 1]->setPosition(sf::Vector2f(
+					tempPos.x + tempSize.x / 2,
+					tempPos.y - 5));
+				_lazers[_lazers.size() - 1]->accelerate(sf::Vector2f(2, -3));
+
+				_lazers.push_back(_deadLazers[0]);
+				_deadLazers.erase(_deadLazers.begin());
+
+				_lazers[_lazers.size() - 1]->setPosition(sf::Vector2f(
+					tempPos.x + tempSize.x / 2,
+					tempPos.y - 5));
+				_lazers[_lazers.size() - 1]->accelerate(sf::Vector2f(-2, -3));
+			}
+			else {
+				sf::Vector2f tempPos = _mC.getPosition();
+				sf::Vector2f tempSize = _mC.getRect()->getSize();
+
+				_lazers.push_back(new Lazer(sf::Vector2f(
+					tempPos.x + tempSize.x / 2,
+					tempPos.y - 5)));
+				_lazers[_lazers.size() - 1]->accelerate(sf::Vector2f(0, -3));
+
+				_lazers.push_back(new Lazer(sf::Vector2f(
+					tempPos.x + tempSize.x / 2,
+					tempPos.y - 5)));
+				_lazers[_lazers.size() - 1]->accelerate(sf::Vector2f(2, -3));
+
+				_lazers.push_back(new Lazer(sf::Vector2f(
+					tempPos.x + tempSize.x / 2,
+					tempPos.y - 5)));
+				_lazers[_lazers.size() - 1]->accelerate(sf::Vector2f(-2, -3));
+			}
 			_mC.resetLastFire();
 		}
-		std::cout << " blank______" << std::endl;
 	}
 }
 
@@ -243,7 +300,7 @@ void Core::loop() {
 		lastRenderT = RenderClock.getElapsedTime();
 
 		// Calling update 
-		if (lastUpdateT.asMicroseconds() > 16100) { 
+		if (lastUpdateT.asMicroseconds() > 16000) { 
 			update();
 			lastUpdateT = UpdateClock.restart();
 		}
@@ -252,20 +309,21 @@ void Core::loop() {
 		if (current.asMilliseconds() > 1000) {
 			_frames = counter;
 			std::cout << "frames: " << _frames << std::endl;
-			std::cout << "dead size: " << _deadSwarm.size() << " swarm size: " << _swarm.size() 
+			std::cout << "deadSwarm size: " << _deadSwarm.size() << " swarm size: " << _swarm.size() 
 				<< " total: " << _deadSwarm.size()+_swarm.size() << std::endl;
-			std::cout << "dead size: " << _deadBombs.size() << " bomb size: " << _bombs.size() << 
+			std::cout << "deadBombs size: " << _deadBombs.size() << " bomb size: " << _bombs.size() << 
 				" total: " << _deadBombs.size() + _bombs.size() << std::endl;
+			std::cout << "deadlazers size: " << _deadLazers.size() << " lazer size: " << _lazers.size() <<
+				" total: " << _deadLazers.size() + _lazers.size() << std::endl;
 			counter = 0;
 			current = clock.restart();
 		}
 
 		// Calling render 
-		if (lastRenderT.asMicroseconds() > 16100) {
+		if (lastRenderT.asMicroseconds() > 16000) {
 			render(lastRenderT.asMilliseconds());
 			lastRenderT = RenderClock.restart();
 			counter++;
 		}
 	}
 }
-
