@@ -9,20 +9,6 @@ int main() {
 	cout << "starting" << endl;
 	Core(640, 480);
 
+	system("pause");
 	return 0;
-
-	/*while (window.isOpen()) {
-
-		sf::Event evnt;
-		while (window.pollEvent(evnt)) {
-
-			if (evnt.type == sf::Event::Closed) {
-				window.close();
-			}
-
-			window.clear();
-			window.draw(circle);
-			window.display();
-		}
-	}*/
 }
